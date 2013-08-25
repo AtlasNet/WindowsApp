@@ -14,7 +14,7 @@ namespace AtlasNetClient
     public class Config
     {
         [DataMember]
-        public AtlasNode BootstrapNode { get; set; }
+        public AtlasNodeInfo BootstrapNode { get; set; }
 
         [DataMember]
         public ObservableCollection<Contact> Contacts = new ObservableCollection<Contact>();

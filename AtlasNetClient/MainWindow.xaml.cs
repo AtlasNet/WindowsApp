@@ -94,10 +94,20 @@ namespace AtlasNetClient
             RefreshDialogArea();
 
             string package = new AtlasClient().PrepareMessage(message, SignMessageCheckbox.IsChecked.Value);
-            var c = new NodeClient("ajenti.org", 1957);
-            c.Connect();
+            var c = App.Instance.ConnectionPool[App.Instance.Config.BootstrapNode];
             c.Send(message, package);
-            c.Disconnect();
+        }
+
+        private void RetrieveButton_Click(object sender, RoutedEventArgs e)
+        {
+            var listings = App.Instance.ConnectionPool[App.Instance.Config.BootstrapNode].GetListings();
+            foreach (var listing in listings)
+            {
+                var client = App.Instance.ConnectionPool[listing.Node];
+                var msg = new AtlasClient().DecryptMessage(client.RetrieveMessage(listing.Id));
+                App.Instance.Config.Messages.Add(msg);
+            }
+            RefreshDialogArea();
         }
     }
 }

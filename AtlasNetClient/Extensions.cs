@@ -7,6 +7,10 @@ using System.Text;
 
 namespace AtlasNetClient
 {
+    public class AtlasNodeDescriptor : Tuple<string, int> {
+        public AtlasNodeDescriptor(string host, int port) : base(host, port) { }
+    }
+
     static class Extensions
     {
         public static string GetName(this AtlasNodeInfo info)
@@ -14,9 +18,9 @@ namespace AtlasNetClient
             return string.Format("{0}:{1} ({2})", info.Host, info.Port, info.Name);
         }
 
-        public static Tuple<string, int> GetDescriptor(this AtlasNodeInfo info)
+        public static AtlasNodeDescriptor GetDescriptor(this AtlasNodeInfo info)
         {
-            return new Tuple<string, int>(info.Host, (int)info.Port);
+            return new AtlasNodeDescriptor(info.Host, (int)info.Port);
         }
 
         public static bool ChangeAndNotify<T>(this PropertyChangedEventHandler handler, ref T field, T value, Expression<Func<T>> memberExpression)

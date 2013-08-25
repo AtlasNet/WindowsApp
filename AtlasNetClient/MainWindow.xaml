@@ -24,7 +24,7 @@
                 </StackPanel>
             </Button>
 
-            <Button Name="RetrieveButton" DockPanel.Dock="Left" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0" Click="AddContactButton_Click">
+            <Button Name="RetrieveButton" DockPanel.Dock="Left" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0" Click="RetrieveButton_Click">
                 <StackPanel Orientation="Horizontal" Margin="5">
                     <Image Source="/AtlasNetClient;component/Resources/IconRetrieve.png" Width="38" Height="38" StretchDirection="DownOnly" VerticalAlignment="Center" />
                     <TextBlock VerticalAlignment="Center">

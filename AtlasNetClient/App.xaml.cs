@@ -14,6 +14,7 @@ namespace AtlasNetClient
         public static App Instance;
         public string DataPath, ConfigPath;
         public Config Config;
+        public ConnectionPool ConnectionPool = new ConnectionPool();
 
         public App() : base()
         {

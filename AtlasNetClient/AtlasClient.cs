@@ -1,4 +1,9 @@
 ﻿using Newtonsoft.Json;
+using Org.BouncyCastle.Crypto.Digests;
+using Org.BouncyCastle.Crypto.Encodings;
+using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Crypto.Paddings;
+using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
@@ -53,7 +58,9 @@ namespace AtlasNetClient
 
             if (sign)
             {
-                var sig = SignerUtilities.GetSigner("SHA1withRSA");
+                //var sig = new PssSigner(new RsaEngine(), new Sha1Digest(), 20, PssSigner.TrailerImplicit);//SignerUtilities.GetSigner("RSASSA-PSS");
+                var sig = SignerUtilities.GetSigner("RSASSA-PSS");
+                //var sig = new RsaDigestSigner(new Sha512Digest());
                 sig.Init(true, Crypto.ReadKey(App.Instance.Config.PrivateKey));
                 var bytes = Encoding.UTF8.GetBytes(msg.Text);
                 sig.BlockUpdate(bytes, 0, bytes.Length);
@@ -62,13 +69,15 @@ namespace AtlasNetClient
 
             var payloadJson = JsonConvert.SerializeObject(payload);
 
-            var iv = new byte[32];
+            var iv = new byte[16];
             var key = new byte[32];
             new SecureRandom().NextBytes(iv);
             new SecureRandom().NextBytes(key);
 
-            var aes = new RijndaelManaged();
-            aes.BlockSize = 256;
+            var aes = new AesManaged();
+            aes.Padding = PaddingMode.PKCS7;
+            aes.KeySize = 256;
+            aes.Mode = CipherMode.CBC;
             aes.Key = key;
             aes.IV = iv;
 
@@ -76,7 +85,11 @@ namespace AtlasNetClient
             var memory = new MemoryStream();
             var cryptoStream = new CryptoStream(memory, encryptor, CryptoStreamMode.Write);
             using (var sw = new StreamWriter(cryptoStream))
+            {
                 sw.Write(payloadJson);
+                sw.Flush();
+                cryptoStream.FlushFinalBlock();
+            }
             cryptoStream.Close();
 
             var package = new MessagePackage();
@@ -86,6 +99,56 @@ namespace AtlasNetClient
             package.recipient_key = msg.ContactKey;
 
             return JsonConvert.SerializeObject(package);
+        }
+
+        public Message DecryptMessage(AtlasMessage msg)
+        {
+            var package = JsonConvert.DeserializeObject<MessagePackage>(msg.Data);
+
+            var aes = new AesManaged();
+            aes.Padding = PaddingMode.PKCS7;
+            aes.KeySize = 256;
+            aes.Mode = CipherMode.CBC;
+            aes.Key = Crypto.Decrypt(Convert.FromBase64String(package.key), Crypto.ReadKey(App.Instance.Config.PrivateKey));
+            aes.IV = Crypto.Decrypt(Convert.FromBase64String(package.iv), Crypto.ReadKey(App.Instance.Config.PrivateKey));
+
+
+            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+            var memory = new MemoryStream(Convert.FromBase64String(package.data));
+            var cryptoStream = new CryptoStream(memory, decryptor, CryptoStreamMode.Read);
+
+            string payloadJson = "";
+            using (var sr = new StreamReader(cryptoStream))
+            {
+                payloadJson = sr.ReadToEnd();
+            }
+            cryptoStream.Close();
+
+            var payload = JsonConvert.DeserializeObject<MessagePayload>(payloadJson);
+            var result = new Message();
+            result.Text = Encoding.UTF8.GetString(Convert.FromBase64String(payload.blob));
+            result.Date = new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds(payload.timestamp).ToUniversalTime();
+            result.Read = false;
+            result.ContactKey = null;
+
+            if (!string.IsNullOrEmpty(payload.signature))
+            {
+                var signedContent = Convert.FromBase64String(payload.blob);
+                foreach (var contact in App.Instance.Config.Contacts)
+                {
+                    var sig = SignerUtilities.GetSigner("RSASSA-PSS");
+                    //var sig = new RsaDigestSigner(new Sha512Digest());
+                    sig.Init(false, Crypto.ReadKey(contact.PublicKey));
+                    sig.BlockUpdate(signedContent, 0, signedContent.Length);
+                    if (sig.VerifySignature(Convert.FromBase64String(payload.signature)))
+                    {
+                        result.ContactKey = contact.PublicKey;
+                        break;
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }
