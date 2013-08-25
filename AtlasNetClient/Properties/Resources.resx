@@ -130,6 +130,9 @@
   <data name="IconRetrieve" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\IconRetrieve.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="IconSend" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\IconSend.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="IconSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\IconSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>

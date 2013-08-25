@@ -100,6 +100,7 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Message.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
@@ -208,6 +209,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\IconWrite.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\IconSend.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

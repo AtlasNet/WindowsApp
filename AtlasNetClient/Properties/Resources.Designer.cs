@@ -103,6 +103,16 @@ namespace AtlasNetClient.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap IconSend {
+            get {
+                object obj = ResourceManager.GetObject("IconSend", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap IconSettings {
             get {
                 object obj = ResourceManager.GetObject("IconSettings", resourceCulture);

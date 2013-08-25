@@ -15,15 +15,6 @@
         <DockPanel Panel.ZIndex="2" DockPanel.Dock="Top" Background="#eee" Height="40" VerticalAlignment="Top">
             <Border BorderThickness="0,0,0,1" SnapsToDevicePixels="true" BorderBrush="#999" />
 
-            <!--Button DockPanel.Dock="Left" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0">
-                <StackPanel Orientation="Horizontal" Margin="5">
-                    <Image Source="/AtlasNetClient;component/Resources/IconWrite.png" Width="30" Height="30" StretchDirection="DownOnly" VerticalAlignment="Center" />
-                    <TextBlock VerticalAlignment="Center">
-                        Compose
-                    </TextBlock>
-                </StackPanel>
-            </Button-->
-
             <Button Name="AddContactButton" DockPanel.Dock="Left" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0" Click="AddContactButton_Click">
                 <StackPanel Orientation="Horizontal" Margin="5">
                     <Image Source="/AtlasNetClient;component/Resources/IconAddContact.png" Width="38" Height="38" StretchDirection="DownOnly" VerticalAlignment="Center" />
@@ -85,7 +76,7 @@
                         <Setter Property="Visibility" Value="Visible" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding DataContext,ElementName=MainPanel}" Value="{x:Null}">
-                                <Setter Property="Visibility" Value="Collapsed" />
+                                <!--Setter Property="Visibility" Value="Collapsed" /-->
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -109,6 +100,18 @@
                                 </TextBlock>
                             </StackPanel>
                         </Button>
+                    </DockPanel>
+                </Border>
+
+                <Border SnapsToDevicePixels="true" Height="Auto" BorderThickness="0,1,0,0" BorderBrush="#ccc" DockPanel.Dock="Bottom" VerticalAlignment="Bottom" >
+                    <DockPanel>
+                        <StackPanel Orientation="Vertical" DockPanel.Dock="Right" >
+                        <Button BorderThickness="0" Padding="0,0,10,0">
+                            <Image Source="/AtlasNetClient;component/Resources/IconSend.png" Width="38" Height="38" StretchDirection="DownOnly" VerticalAlignment="Center" />
+                        </Button>
+                            <CheckBox Content="Sign" Margin="10" />
+                        </StackPanel>
+                        <TextBox Name="MessageInputBox" AcceptsReturn="true" TextWrapping="Wrap" BorderThickness="0" />
                     </DockPanel>
                 </Border>
             </DockPanel>
