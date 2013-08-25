@@ -24,9 +24,31 @@ namespace AtlasNetClient
         [DataMember]
         public bool Read { get; set; }
 
+        [DataMember]
+        public States State { get; set; }
+
         public Contact Contact
         {
             get { return App.Instance.Config.Contacts.FirstOrDefault((x) => x.PublicKey == ContactKey); }
+        }
+
+        public string DisplaySender
+        {
+            get
+            {
+                if (ContactKey == null)
+                    return "Anonymous";
+                if (Contact == null)
+                    return "Unknown";
+                if (Outgoing)
+                    return "Me";
+                return Contact.Name;
+            }
+        }
+
+        public enum States
+        {
+            Sending, Normal
         }
     }
 }

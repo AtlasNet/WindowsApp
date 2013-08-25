@@ -35,6 +35,11 @@ namespace AtlasNetClient
             Console.WriteLine("Connected to {0}", NodeInfo.GetName());
         }
 
+        public void Send(Message message, string packageJson)
+        {
+            Client.postMessage(new AtlasMessage { Data = packageJson, RecipientKey = message.ContactKey });
+        }
+
         public void Disconnect()
         {
             Transport.Close();

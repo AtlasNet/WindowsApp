@@ -33,7 +33,6 @@
                 </StackPanel>
             </Button>
 
-
             <Button Name="SettingsButton" DockPanel.Dock="Right" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Click="SettingsButton_Click">
                 <StackPanel Orientation="Horizontal" Margin="5">
                     <Image Source="/AtlasNetClient;component/Resources/IconSettings.png" Width="38" Height="38" StretchDirection="DownOnly" VerticalAlignment="Center" />
@@ -106,14 +105,32 @@
                 <Border SnapsToDevicePixels="true" Height="Auto" BorderThickness="0,1,0,0" BorderBrush="#ccc" DockPanel.Dock="Bottom" VerticalAlignment="Bottom" >
                     <DockPanel>
                         <StackPanel Orientation="Vertical" DockPanel.Dock="Right" >
-                        <Button BorderThickness="0" Padding="0,0,10,0">
-                            <Image Source="/AtlasNetClient;component/Resources/IconSend.png" Width="38" Height="38" StretchDirection="DownOnly" VerticalAlignment="Center" />
-                        </Button>
-                            <CheckBox Content="Sign" Margin="10" />
+                            <Button Name="SendMessageButton" BorderThickness="0" Padding="0,0,10,0" Click="SendMessageButton_Click">
+                                <Image Source="/AtlasNetClient;component/Resources/IconSend.png" Width="38" Height="38" StretchDirection="DownOnly" VerticalAlignment="Center" />
+                            </Button>
+                            <CheckBox Name="SignMessageCheckbox" Content="Sign" Margin="10" />
                         </StackPanel>
-                        <TextBox Name="MessageInputBox" AcceptsReturn="true" TextWrapping="Wrap" BorderThickness="0" />
-                    </DockPanel>
+                        <TextBox Padding="10" Name="MessageTextBox" AcceptsReturn="true" TextWrapping="Wrap" BorderThickness="0" />
+                    </DockPanel >
                 </Border>
+
+                <ScrollViewer Name="MessagesListScroll">
+                    <ItemsControl Name="MessagesList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel HorizontalAlignment="Stretch">
+                                    <Border BorderThickness="0,0,0,1" BorderBrush="#ccc" />
+
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <Label DockPanel.Dock="Left" FontWeight="Bold" Content="{Binding DisplaySender}" />
+                                        <Label DockPanel.Dock="Right" HorizontalAlignment="Right" FontWeight="Light" Content="{Binding Date}" />
+                                    </DockPanel>
+                                    <Label Content="{Binding Text}" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </DockPanel>
         </Grid>
     </DockPanel>

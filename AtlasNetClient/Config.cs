@@ -25,6 +25,8 @@ namespace AtlasNetClient
         [DataMember]
         public string PrivateKey { get; set; }
 
+        [DataMember]
+        public List<Message> Messages { get; set; }
 
         public static Config Load(string path)
         {

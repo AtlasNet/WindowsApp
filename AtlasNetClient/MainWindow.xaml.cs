@@ -30,12 +30,23 @@ namespace AtlasNetClient
         public MainWindow()
         {
             InitializeComponent();
+            SignMessageCheckbox.IsChecked = true;
             ContactList.ItemsSource = App.Instance.Config.Contacts;
+        }
+
+        public void RefreshDialogArea()
+        {
+            var messages = new List<Message>();
+            messages.AddRange(App.Instance.Config.Messages.Where((x) => x.Contact == SelectedContact));
+            MessagesList.ItemsSource = messages;
+            MessageTextBox.Focus();
+            MessagesListScroll.ScrollToEnd();
         }
 
         private void ContactList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedContact = (Contact)ContactList.SelectedItem;
+            RefreshDialogArea();
         }
 
         private void AddContactButton_Click(object sender, RoutedEventArgs e)
@@ -73,6 +84,20 @@ namespace AtlasNetClient
                 App.Instance.Config.Contacts.Remove(SelectedContact);
                 SelectedContact = null;
             }
+        }
+
+        private void SendMessageButton_Click(object sender, RoutedEventArgs e)
+        {
+            var message = new Message { Text = MessageTextBox.Text, ContactKey = SelectedContact.PublicKey, Date = DateTime.UtcNow, Read = false, Outgoing = true };
+            MessageTextBox.Text = "";
+            App.Instance.Config.Messages.Add(message);
+            RefreshDialogArea();
+
+            string package = new AtlasClient().PrepareMessage(message, SignMessageCheckbox.IsChecked.Value);
+            var c = new NodeClient("ajenti.org", 1957);
+            c.Connect();
+            c.Send(message, package);
+            c.Disconnect();
         }
     }
 }

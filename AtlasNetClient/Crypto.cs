@@ -1,4 +1,6 @@
 ﻿using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Encodings;
+using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security;
@@ -16,7 +18,10 @@ namespace AtlasNetClient
         public static AsymmetricKeyParameter ReadKey(string data)
         {
             var pemReader = new PemReader(new StringReader(data));
-            return (AsymmetricKeyParameter)pemReader.ReadObject();
+            var obj = pemReader.ReadObject();
+            if (obj is AsymmetricCipherKeyPair)
+                return (obj as AsymmetricCipherKeyPair).Private;
+            return (AsymmetricKeyParameter)obj;
         }
 
         public static string SaveKey(AsymmetricKeyParameter key)
@@ -31,6 +36,20 @@ namespace AtlasNetClient
             var gen = new RsaKeyPairGenerator();
             gen.Init(new KeyGenerationParameters(new SecureRandom(), bits));
             return gen.GenerateKeyPair();
+        }
+
+        public static byte[] Encrypt(byte[] data, AsymmetricKeyParameter key)
+        {
+            var cipher = new OaepEncoding(new RsaEngine());
+            cipher.Init(true, key);
+            return cipher.ProcessBlock(data, 0, data.Length);
+        }
+
+        public static byte[] Decrypt(byte[] data, AsymmetricKeyParameter key)
+        {
+            var cipher = new OaepEncoding(new RsaEngine());
+            cipher.Init(false, key);
+            return cipher.ProcessBlock(data, 0, data.Length);
         }
     }
 }
