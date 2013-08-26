@@ -26,7 +26,12 @@ namespace AtlasNetClient
         public string PrivateKey { get; set; }
 
         [DataMember]
-        public List<Message> Messages { get; set; }
+        public ObservableCollection<Message> Messages = new ObservableCollection<Message>();
+
+        public Config()
+        {
+            BootstrapNode = new AtlasNodeInfo { Host = "ajenti.org", Port = 1957 };
+        }
 
         public static Config Load(string path)
         {

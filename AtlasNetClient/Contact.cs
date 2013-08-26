@@ -14,5 +14,10 @@ namespace AtlasNetClient
 
         [DataMember]
         public string PublicKey { get; set; }
+
+        public bool IsAnonymous
+        {
+            get { return PublicKey == null; }
+        }
     }
 }

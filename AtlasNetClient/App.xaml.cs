@@ -34,6 +34,9 @@ namespace AtlasNetClient
                 Config.Save(ConfigPath);
             }
 
+            if (!Config.Contacts.Any(x => x.IsAnonymous))
+                Config.Contacts.Add(new Contact { Name = "Anonymous", PublicKey = null });
+
             Run(new MainWindow());
         }
 

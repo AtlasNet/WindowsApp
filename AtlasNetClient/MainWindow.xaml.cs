@@ -32,16 +32,65 @@ namespace AtlasNetClient
             InitializeComponent();
             SignMessageCheckbox.IsChecked = true;
             ContactList.ItemsSource = App.Instance.Config.Contacts;
+            ContactList.Items.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            DisplayAppState(AppState.Idle, "Ready");
+
+            BackgroundWorker.OnProgress = delegate(bool complete, string message)
+            {
+                Dispatcher.BeginInvoke(new Action(delegate
+                {
+                    DisplayAppState(complete ? AppState.Idle : AppState.Working, complete ? "Done" : message);
+                    if (complete)
+                        RefreshDialogArea();
+                }));
+            };
+
+            App.Instance.Config.Messages.CollectionChanged += delegate
+            {
+                Dispatcher.BeginInvoke(new Action(delegate
+                 {
+                     RefreshDialogArea(false);
+                 }));
+            };
         }
 
-        public void RefreshDialogArea()
+        public void RefreshDialogArea(bool scroll = true)
         {
             var messages = new List<Message>();
-            messages.AddRange(App.Instance.Config.Messages.Where((x) => x.Contact == SelectedContact));
-            MessagesList.ItemsSource = messages;
-            MessageTextBox.Focus();
-            MessagesListScroll.ScrollToEnd();
+            if (SelectedContact != null)
+            {
+                messages.AddRange(App.Instance.Config.Messages.Where((x) => x.ContactKey == SelectedContact.PublicKey));
+                MessagesList.ItemsSource = messages;
+                MessageTextBox.Focus();
+                if (scroll)
+                    MessagesListScroll.ScrollToEnd();
+            }
         }
+
+
+        private enum AppState
+        {
+            Idle, Working
+        }
+
+        private void DisplayAppState(AppState state, string info)
+        {
+            StatusBarText.Content = info;
+            if (state == AppState.Idle)
+            {
+                StatusBarAnimation.Visibility = Visibility.Collapsed;
+                StatusBar.Background = new SolidColorBrush(Color.FromRgb(0x25, 0x80, 0xCD));
+                StatusBar.Foreground = new SolidColorBrush(Colors.White);
+            }
+            if (state == AppState.Working)
+            {
+                StatusBarAnimation.Visibility = Visibility.Visible;
+                StatusBar.Background = new SolidColorBrush(Color.FromRgb(0xCD, 0x80, 0x25));
+                StatusBar.Foreground = new SolidColorBrush(Colors.White);
+            }
+        }
+
+        // -------------
 
         private void ContactList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -69,10 +118,14 @@ namespace AtlasNetClient
 
         private void Window_Loaded_1(object sender, RoutedEventArgs e)
         {
-
             while (App.Instance.Config.PublicKey == null)
             {
                 MessageBox.Show("Please generate a new encryption key", "AtlasNet", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                SettingsButton_Click(null, null);
+            }
+            while (string.IsNullOrEmpty(App.Instance.Config.BootstrapNode.Host))
+            {
+                MessageBox.Show("Please specify a bootstrap node", "AtlasNet", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                 SettingsButton_Click(null, null);
             }
         }
@@ -81,6 +134,8 @@ namespace AtlasNetClient
         {
             if (MessageBox.Show(string.Format("Delete contact '{0}'?", SelectedContact.Name), Title, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
+                foreach (var message in new List<Message>(App.Instance.Config.Messages.Where(x => x.ContactKey == SelectedContact.PublicKey)))
+                    App.Instance.Config.Messages.Remove(message);
                 App.Instance.Config.Contacts.Remove(SelectedContact);
                 SelectedContact = null;
             }
@@ -88,26 +143,26 @@ namespace AtlasNetClient
 
         private void SendMessageButton_Click(object sender, RoutedEventArgs e)
         {
-            var message = new Message { Text = MessageTextBox.Text, ContactKey = SelectedContact.PublicKey, Date = DateTime.UtcNow, Read = false, Outgoing = true };
+            var message = new Message
+            {
+                Text = MessageTextBox.Text,
+                ContactKey = SelectedContact.PublicKey,
+                Date = DateTime.UtcNow,
+                Read = true,
+                Outgoing = true,
+                State = Message.States.Sending,
+                SignatureVerified = true
+            };
             MessageTextBox.Text = "";
             App.Instance.Config.Messages.Add(message);
             RefreshDialogArea();
 
-            string package = new AtlasClient().PrepareMessage(message, SignMessageCheckbox.IsChecked.Value);
-            var c = App.Instance.ConnectionPool[App.Instance.Config.BootstrapNode];
-            c.Send(message, package);
+            BackgroundWorker.SendMessage(message, SignMessageCheckbox.IsChecked.Value);
         }
 
         private void RetrieveButton_Click(object sender, RoutedEventArgs e)
         {
-            var listings = App.Instance.ConnectionPool[App.Instance.Config.BootstrapNode].GetListings();
-            foreach (var listing in listings)
-            {
-                var client = App.Instance.ConnectionPool[listing.Node];
-                var msg = new AtlasClient().DecryptMessage(client.RetrieveMessage(listing.Id));
-                App.Instance.Config.Messages.Add(msg);
-            }
-            RefreshDialogArea();
+            BackgroundWorker.RetrieveMail();
         }
     }
 }

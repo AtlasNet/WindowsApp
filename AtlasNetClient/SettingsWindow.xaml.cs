@@ -29,10 +29,25 @@ namespace AtlasNetClient
         private void Refresh()
         {
             KeyBox.Text = App.Instance.Config.PublicKey;
+            BootstrapNodeHostBox.Text = App.Instance.Config.BootstrapNode.Host;
+            BootstrapNodePortBox.Text = App.Instance.Config.BootstrapNode.Port.ToString();
         }
 
         private void OKButton_Click(object sender, RoutedEventArgs e)
         {
+            if (BootstrapNodeHostBox.Text.Length == 0)
+            {
+                MessageBox.Show("Node address must not be empty", "AtlasNet", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            App.Instance.Config.BootstrapNode.Host = BootstrapNodeHostBox.Text;
+            try
+            { App.Instance.Config.BootstrapNode.Port = int.Parse(BootstrapNodePortBox.Text); }
+            catch
+            {
+                MessageBox.Show("Node port must be numeric", "AtlasNet", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             DialogResult = true;
             Close();
         }

@@ -16,6 +16,11 @@ namespace AtlasNetClient
 {
     public static class Crypto
     {
+        public static string SanitizeKey(string pem)
+        {
+            return pem.Trim().Replace("\r", "");
+        }
+
         public static AsymmetricKeyParameter ReadKey(string data)
         {
             var pemReader = new PemReader(new StringReader(data));

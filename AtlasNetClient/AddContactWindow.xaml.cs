@@ -24,6 +24,7 @@ namespace AtlasNetClient
         public AddContactWindow()
         {
             InitializeComponent();
+            NameBox.Focus();
         }
 
         private void OKButton_Click(object sender, RoutedEventArgs e)

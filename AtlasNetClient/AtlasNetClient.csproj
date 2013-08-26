@@ -101,8 +101,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AtlasClient.cs" />
+    <Compile Include="BackgroundWorker.cs" />
     <Compile Include="ConnectionPool.cs" />
     <Compile Include="Message.cs" />
+    <Compile Include="RelayCommand.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
@@ -214,6 +216,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\IconSend.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\IconDelete.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -8,6 +8,7 @@
     <Grid>
         <Grid Margin="5">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -16,8 +17,15 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+
+            <Label Content="Bootstrap Node:" Grid.Row="0" Grid.Column="0" Margin="5" />
+            <DockPanel Grid.Row="0" Grid.Column="1">
+                <TextBox DockPanel.Dock="Right" Name="BootstrapNodePortBox" Width="50" Margin="5" Padding="3" />
+                <Label Content="Port:" DockPanel.Dock="Right" Margin="5" />
+                <TextBox Name="BootstrapNodeHostBox" Margin="5" Padding="3" />
+            </DockPanel>
             
-            <StackPanel Grid.Row="0" Grid.Column="0" Margin="5">
+            <StackPanel Grid.Row="1" Grid.Column="0" Margin="5">
                 <TextBlock>
                 Your public key
                 </TextBlock>
@@ -25,16 +33,16 @@
                     Share this key with your recipients using e-mail.
                 </TextBlock>
             </StackPanel>
-            <TextBox Name="KeyBox" Grid.Row="0" Grid.Column="1" AcceptsReturn="true" IsReadOnly="True" Margin="5" PreviewMouseUp="KeyBox_PreviewMouseUp" />
+            <TextBox Name="KeyBox" Grid.Row="1" Grid.Column="1" AcceptsReturn="true" IsReadOnly="True" Margin="5" PreviewMouseUp="KeyBox_PreviewMouseUp" />
 
-            <Label Content="New Key Strength:" Grid.Row="1" Grid.Column="0" Margin="5" />
-            <Grid Grid.Row="1" Grid.Column="1" >
+            <Label Content="New Key Strength:" Grid.Row="2" Grid.Column="0" Margin="5" />
+            <Grid Grid.Row="2" Grid.Column="1" >
                 <ComboBox Name="KeyLengthBox" SelectedIndex="0" Margin="5" HorizontalAlignment="Left" Width="100" />
                 <Button Width="120" HorizontalAlignment="Right" Name="RegenerateKeyButton" 
                         Content="Generate a new key" Margin="5" Click="RegenerateKeyButton_Click" />
             </Grid>
             
-            <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="3" HorizontalAlignment="Right">
                 <Button Name="OKButton" Content="Save" Width="80" Height="30" Margin="5" Click="OKButton_Click"/>
             </StackPanel>
         </Grid>

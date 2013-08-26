@@ -31,6 +31,9 @@ namespace AtlasNetClient
 
             [DataMember]
             public string signature;
+
+            [DataMember]
+            public string sender_key;
         }
 
         [DataContract]
@@ -49,8 +52,10 @@ namespace AtlasNetClient
             public string recipient_key;
         }
 
-        public string PrepareMessage(Message msg, bool sign)
+        public string PrepareMessage(Message msg, bool sign, BackgroundWorker.ProgressMessage OnProgress)
         {
+            OnProgress = OnProgress ?? delegate { };
+
             var payload = new MessagePayload();
             payload.type = "text";
             payload.blob = Convert.ToBase64String(Encoding.UTF8.GetBytes(msg.Text));
@@ -58,13 +63,13 @@ namespace AtlasNetClient
 
             if (sign)
             {
-                //var sig = new PssSigner(new RsaEngine(), new Sha1Digest(), 20, PssSigner.TrailerImplicit);//SignerUtilities.GetSigner("RSASSA-PSS");
+                OnProgress(false, "Signing");
                 var sig = SignerUtilities.GetSigner("RSASSA-PSS");
-                //var sig = new RsaDigestSigner(new Sha512Digest());
                 sig.Init(true, Crypto.ReadKey(App.Instance.Config.PrivateKey));
                 var bytes = Encoding.UTF8.GetBytes(msg.Text);
                 sig.BlockUpdate(bytes, 0, bytes.Length);
                 payload.signature = Convert.ToBase64String(sig.GenerateSignature());
+                payload.sender_key = Crypto.SanitizeKey(App.Instance.Config.PublicKey);
             }
 
             var payloadJson = JsonConvert.SerializeObject(payload);
@@ -81,6 +86,7 @@ namespace AtlasNetClient
             aes.Key = key;
             aes.IV = iv;
 
+            OnProgress(false, "Encrypting");
             var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
             var memory = new MemoryStream();
             var cryptoStream = new CryptoStream(memory, encryptor, CryptoStreamMode.Write);
@@ -92,6 +98,7 @@ namespace AtlasNetClient
             }
             cryptoStream.Close();
 
+            OnProgress(false, "Packing");
             var package = new MessagePackage();
             package.data = Convert.ToBase64String(memory.ToArray());
             package.iv = Convert.ToBase64String(Crypto.Encrypt(iv, Crypto.ReadKey(msg.ContactKey)));
@@ -131,21 +138,26 @@ namespace AtlasNetClient
             result.Read = false;
             result.ContactKey = null;
 
-            if (!string.IsNullOrEmpty(payload.signature))
+            if (!string.IsNullOrEmpty(payload.sender_key))
             {
                 var signedContent = Convert.FromBase64String(payload.blob);
                 foreach (var contact in App.Instance.Config.Contacts)
-                {
-                    var sig = SignerUtilities.GetSigner("RSASSA-PSS");
-                    //var sig = new RsaDigestSigner(new Sha512Digest());
-                    sig.Init(false, Crypto.ReadKey(contact.PublicKey));
-                    sig.BlockUpdate(signedContent, 0, signedContent.Length);
-                    if (sig.VerifySignature(Convert.FromBase64String(payload.signature)))
+                    if (contact.PublicKey != null && Crypto.SanitizeKey(contact.PublicKey) == Crypto.SanitizeKey(payload.sender_key))
                     {
-                        result.ContactKey = contact.PublicKey;
-                        break;
+                        var sig = SignerUtilities.GetSigner("RSASSA-PSS");
+                        sig.Init(false, Crypto.ReadKey(contact.PublicKey));
+                        sig.BlockUpdate(signedContent, 0, signedContent.Length);
+                        if (sig.VerifySignature(Convert.FromBase64String(payload.signature)))
+                        {
+                            result.ContactKey = contact.PublicKey;
+                            result.SignatureVerified = true;
+                            break;
+                        }
                     }
-                }
+            }
+            else
+            {
+                result.SignatureVerified = true;
             }
 
             return result;
